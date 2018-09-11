@@ -60,29 +60,22 @@ Mat construct(const Mat& x_j, const Mat& X_j)
 	auto y = x_j.at<double>(0, 1);
 	auto w = x_j.at<double>(0, 2);
 
-	cout << "x = " << x << "\n";
-	cout << "y = " << y << "\n";
-	cout << "w = " << w << "\n";
-	cout << "x_j: \n" << x_j;
-
-	cout << "X_j: \n" << X_j;
+	// DEBUG:
+	//cout << "x = " << x << "\n";
+	//cout << "y = " << y << "\n";
+	//cout << "w = " << w << "\n";
+	//cout << "x_j: \n" << x_j;
+	//cout << "X_j: \n" << X_j;
 
 	// Construct row-1
 	Mat temp1 = Mat::zeros(1, 4, CV_64FC1);
 	Mat temp2 = -w * X_j;
 	Mat temp3 =  y * X_j;
 
-	cout << "\nDEBUG\n";
-	cout << "temp3:\n" << temp3;
-	
-
-
 	Mat row1;
 	hconcat(temp1, temp2, row1);
 	hconcat(row1, temp3, row1);
-
-	cout << "\nrow1:\n" << row1;
-
+	//cout << "\nrow1:\n" << row1;
 
 	// Construct row-2
 	temp1 = w * X_j;
@@ -92,13 +85,11 @@ Mat construct(const Mat& x_j, const Mat& X_j)
 	Mat row2;
 	hconcat(temp1, temp2, row2);
 	hconcat(row2, temp3, row2);
-
-	cout << "\nrow2:\n" << row2;
+	//cout << "\nrow2:\n" << row2;
 
 	// Concatenate two rows rows
 	Mat A_two_rows;
 	vconcat(row1, row2, A_two_rows);
-
 
 	return A_two_rows;
 }

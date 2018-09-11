@@ -27,19 +27,12 @@ int main()
 	// Construct the matrix A corresponding to equation 7.2 (page 178 in H&Z)
 	auto A = construct_A(x_1_, X_1_);
 
-	//cout << "A:\n" << A;
-
-
-
-	// TODO - drop SVD on A
-	// [U, SIGMA, V] = svd(A);
-
+	// Drop an SVD on A
 	Mat W, U, Vt;
 	cv::SVD::compute(A, W, U, Vt);
-	//cout << "Vt:\n" << vt;
-
-	Mat V = -Vt.t(); // SVD is only unique up to a sign
-	//cout << "V:\n" << V;
+	
+	// Modify SVD
+	Mat V = -Vt.t(); // SVD in OpenCV is different than MATLAB and Numpy
 
 	// Extract right most column of V
 	const size_t I = V.rows;
@@ -48,16 +41,23 @@ int main()
 	for (int i = 0; i < I; ++i)
 		v.at<double>(i, 0) = V.at<double>(i, J-1); // Itterate down right-most col of V
 
-	//cout << "v:\n" << v;
+	// Re-shape into 3x4 camera-projection matrix
 	int cn=0;
 	int rows=3;
 	Mat P = v.reshape(cn,rows);
 	cout << "P:\n" << P;
 
+	// Re-project the 3D-world points into the 2D-image plane
+	auto x_1_reproject = P * X_1_;
+	cout << "x_1_reproject" << x_1_reproject;
+
+
+
+
 
 	// Link to MATLAB environment
 	matlabClass matlab;
-	matlab.passImageIntoMatlab(P);
+	matlab.passImageIntoMatlab(x_1_reproject);
 	//matlab.passImageIntoMatlab(A);
 
 	// Run MATLAB script that executes prototype
