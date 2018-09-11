@@ -48,12 +48,16 @@ int main()
 	for (int i = 0; i < I; ++i)
 		v.at<double>(i, 0) = V.at<double>(i, J-1); // Itterate down right-most col of V
 
-	cout << "v:\n" << v;
+	//cout << "v:\n" << v;
+	int cn=0;
+	int rows=3;
+	Mat P = v.reshape(cn,rows);
+	cout << "P:\n" << P;
 
 
 	// Link to MATLAB environment
 	matlabClass matlab;
-	matlab.passImageIntoMatlab(v);
+	matlab.passImageIntoMatlab(P);
 	//matlab.passImageIntoMatlab(A);
 
 	// Run MATLAB script that executes prototype
