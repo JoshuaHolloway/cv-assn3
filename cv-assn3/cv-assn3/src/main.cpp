@@ -45,15 +45,15 @@ int main()
 	int cn=0;
 	int rows=3;
 	Mat P = v.reshape(cn,rows);
-	cout << "P:\n" << P;
+	//cout << "P:\n" << P;
 
 	// Re-project the 3D-world points into the 2D-image plane
-	auto x_1_reproject = P * X_1_;
+	auto x_1_reproject_ = P * X_1_;
+	//cout << "x_1_reproject" << x_1_reproject_;
+
+	// Map from homo to non-homo coordinates:
+	auto x_1_reproject = from_homo(x_1_reproject_);
 	cout << "x_1_reproject" << x_1_reproject;
-
-
-
-
 
 	// Link to MATLAB environment
 	matlabClass matlab;

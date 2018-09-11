@@ -48,7 +48,7 @@ Mat from_homo(const Mat& x_) // NEED TO TEST THAT THIS WORKS AS EXPECTED!!!!!!!!
 	Mat x = Mat::ones(rows - 1, cols, CV_64FC1);
 	for (int i = 0; i < rows - 1; ++i)
 		for (int j = 0; j < cols; ++j)
-			x.at<double>(i, j) = x_.at<double>(i, j) / x_.at<double>(rows, j);
+			x.at<double>(i, j) = x_.at<double>(i, j) / x_.at<double>(rows-1, j);
 
 	return x;
 }
