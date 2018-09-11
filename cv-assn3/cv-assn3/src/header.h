@@ -2,6 +2,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
 #include <iostream>
 #include <vector>
 #include <type_traits>
@@ -184,16 +185,26 @@ void P_to_KRt(const Mat& P)
 	//  Q : 3x3 rotation matrix(extrinsics)
 	//  t : 3x1 translation vector(extrinsics)
 
-	int x = 0;
-	int y = 0;
-	int width = 3;
-	int height = 3;
-	cv::Mat submat = cv::Mat(P, cv::Rect(x, y, width, height));
+	int x = 0, y = 0;
+	int delta = 3;
+	cv::Mat M = cv::Mat(P, cv::Rect(x, y, delta, delta));
 
 	cout << "\n\nP:\n" << P;
+	cout << "\n\nsubmat:\n" << M;
+
+	//Vec3d RQDecomp3x3(
+	//	InputArray src, 
+	//	OutputArray mtxR, 
+	//	OutputArray mtxQ, 
+	//	OutputArray Qx = noArray(), 
+	//	OutputArray Qy = noArray(), 
+	//	OutputArray Qz = noArray())
+	Mat R, Q;
+	RQDecomp3x3(M, R, Q);
+	cout << "\nR:\n" << R;
+	cout << "\n\nQ:\n" << Q;
 
 
-	cout << "\n\nsubmat:\n" << submat;
 	getchar();
 }
 
