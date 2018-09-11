@@ -1,5 +1,6 @@
 #include "header.h"
 #include "Matlab_Class.h"
+#include <numeric>
 int main()
 {
 	/// Part 1:
@@ -55,6 +56,73 @@ int main()
 	auto x_1_reproject = from_homo(x_1_reproject_);
 	cout << "x_1_reproject" << x_1_reproject;
 
+	
+	/// Compute re-projection error
+
+	// Get into form that matches notation from LM-implementation notes:
+	vector<double> x_u,     x_v;      // row-vec
+	vector<double> x_u_hat, x_v_hat;  // row-vec
+	for (int j = 0; j < N; ++j) // itterate across cols
+	{
+		x_u.push_back(x_1.at<double>(0, j));
+		x_v.push_back(x_1.at<double>(1, j));
+
+		x_u_hat.push_back(x_1_reproject.at<double>(0, j));
+		x_v_hat.push_back(x_1_reproject.at<double>(1, j));
+	}
+	
+	// Form d-vector
+	vector<double> d;
+	double l2 = 0;
+	for (int j = 0; j < N; ++j)
+	{
+		auto d_jx = x_u[j] - x_u_hat[j];
+		auto d_jy = x_v[j] - x_v_hat[j];
+
+		d.push_back(d_jx);
+		d.push_back(d_jy);
+
+		auto diff = d_jx - d_jy;
+		l2 += diff * diff;
+	}
+
+	// Perform inner product with self
+	auto sum_sqaured_error = std::inner_product(d.begin(), d.end(), d.begin(), 0);
+	cout << "sum_sqaured_error = " << sum_sqaured_error << "\n";
+	cout << "l2 error = " << l2 << "\n";
+
+	// Look at image
+	auto img = imread("rubik_cube.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+	Mat img_c1; 
+	cvtColor(img, img_c1, cv::COLOR_GRAY2BGR);
+
+	// Place poitns in form to be drawn
+	const int x1 = 50, y1 = 50;   // (x1,y1) ----- (x2,y1)
+	const int x2 = 200, y2 = 200; //    |             |
+	const int delta = 50;         //    |             |
+                                // (x1,y2) ----- (x2,y2)
+	Point2f point1(x1, y1), point2(x2, y1);
+	Point2f point3(x1, y2), point4(x2, y2);	vector<Point2f> pts1({ point1, point2, point3 });
+
+
+	// Draw points on original image
+	int radius = 2;
+	Scalar color(255, 0, 0);
+	vector<Scalar> colors{ Scalar(255, 0, 0), Scalar(0, 255, 0), Scalar(0, 0, 255), Scalar(255, 255, 0) };
+	int thickness;
+	
+	// Look at mapping of 3-points for affine transformation
+	int i = 0;
+	for (auto itter : pts1)
+		cv::circle(img_c1, itter, radius, colors[i++], thickness = 8);
+
+	imshow("Original with 3-points", img_c1);
+	waitKey(0);
+
+	/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	/// Protoyping stuff:
+	/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 	// Link to MATLAB environment
 	matlabClass matlab;
 	matlab.passImageIntoMatlab(x_1_reproject);
@@ -63,13 +131,6 @@ int main()
 	// Run MATLAB script that executes prototype
 	matlab.command("ass3");
 
-	// TODO - extract right-most column of V
-
-
-	auto img = imread("rubik_cube.jpg");
-	imshow("test", img);
-	waitKey(0);
-
-	getchar();
+	
 	return 0;
 }

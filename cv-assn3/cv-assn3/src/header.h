@@ -6,6 +6,8 @@
 #include <type_traits>
 //===================================================================
 using cv::Mat;
+using cv::Scalar;
+using cv::Point2f;
 using cv::imread;
 using cv::imshow;
 using cv::waitKey;
