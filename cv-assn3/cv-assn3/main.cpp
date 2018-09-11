@@ -1,57 +1,4 @@
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <iostream>
-#include <vector>
-#include <type_traits>
-//===================================================================
-using cv::Mat;
-using cv::imread;
-using cv::imshow;
-using cv::waitKey;
-using std::cout;
-using std::vector;
-//===================================================================
-constexpr size_t N = 28;
-//===================================================================
-template <class T, size_t dim1, size_t dim2>
-Mat copy_2_mat(const T(&arr)[dim1][dim2])
-{
-	Mat mat(dim1, dim2, CV_64FC1);
-	for (int i = 0; i < dim1; ++i)
-		for (int j = 0; j < dim2; ++j)
-			mat.at<double>(i, j) = arr[i][j];
-	return mat;
-}
-//===================================================================
-Mat to_homo(const Mat& x)
-{
-	// Map a vector in non-homogeneous coordinates (dimension m)
-	//  to a vector in homogeneous coordinates     (dimension m+1)
-
-	Mat x_ = Mat::ones(x.rows + 1, x.cols, CV_64FC1);
-	for (int i = 0; i < x.rows; ++i)
-		for (int j = 0; j < x.cols; ++j)
-			x_.at<double>(i, j);
-
-	return x_;
-}
-//===================================================================
-Mat from_homo(const Mat& x_) // NEED TO TEST THAT THIS WORKS AS EXPECTED!!!!!!!!!!!!!!!!!!
-{
-	// Map a vector in homogeneous coordinates     (dimension m+1)
-	//  to a vector in non-homogeneous coordinates (dimension m)
-
-	const size_t rows = x_.rows;
-	const size_t cols = x_.cols;
-
-	Mat x = Mat::ones(rows - 1, cols, CV_64FC1);
-	for (int i = 0; i < rows - 1; ++i)
-		for (int j = 0; j < cols; ++j)
-			x.at<double>(i, j) = x_.at<double>(i, j) / x_.at<double>(rows, j);
-
-	return x;
-}
-//===================================================================
+#include "header.h"
 int main()
 {
 	/// Part 1:
@@ -70,13 +17,16 @@ int main()
 		{ 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0, -1, -1, -1, -1, -2, -2, -2, -2, -3, -3, -3, -3 }
 	};
 
-	
 	auto x_1 = copy_2_mat(pts_2d);
 	auto X_1 = copy_2_mat(pts_3d);
 
 	auto x_1_ = to_homo(x_1);
 	auto X_1_ = to_homo(X_1);
 	
+	// Construct the matrix A corresponding to equation 7.2 (page 178 in H&Z)
+	auto A = construct_A(x_1_, X_1_);
+
+
 	auto img = imread("rubik_cube.jpg");
 	imshow("test", img);
 	waitKey(0);
