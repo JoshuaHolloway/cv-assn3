@@ -168,3 +168,32 @@ void draw_points(
 
 
 }
+//===================================================================
+void P_to_KRt(const Mat& P)
+{
+	//	This function computes the decomposition of the projection matrix into intrinsic parameters, K, and extrinsic parameters Q(the rotation matrix) and t(the translation vector)
+	//
+	//  Usage:
+	//	K, Q, t = P_to_KRt(P)
+	//
+	//		Input :
+	//		P : 3x4 projection matrix
+	//
+	//		Outputs :
+	//  K: 3x3 camera intrinsics
+	//  Q : 3x3 rotation matrix(extrinsics)
+	//  t : 3x1 translation vector(extrinsics)
+
+	int x = 0;
+	int y = 0;
+	int width = 3;
+	int height = 3;
+	cv::Mat submat = cv::Mat(P, cv::Rect(x, y, width, height));
+
+	cout << "\n\nP:\n" << P;
+
+
+	cout << "\n\nsubmat:\n" << submat;
+	getchar();
+}
+

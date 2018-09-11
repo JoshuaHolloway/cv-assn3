@@ -101,14 +101,17 @@ int main()
 	Scalar color;
 	draw_points(img_c, x_u,     x_v,     color = Scalar(255, 0,   255));
 	draw_points(img_c, x_u_hat, x_v_hat, color = Scalar(0,   2550, 0));
-
+	
+	/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	/// Decompose the projection matrix into P = K * [R t]
+	/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	P_to_KRt(P);
 
 
 
 	/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	/// Protoyping stuff:
 	/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 
 	// Link to MATLAB environment
 	matlabClass matlab;
