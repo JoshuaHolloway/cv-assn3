@@ -87,8 +87,6 @@ Mat construct(const Mat& x_j, const Mat& X_j)
 	Mat A_two_rows;
 	vconcat(row1, row2, A_two_rows);
 
-	cout << "A_two_rows = \n" << A_two_rows;
-	getchar();
 
 	return A_two_rows;
 }
@@ -106,7 +104,10 @@ Mat construct_A(const Mat& x_, const Mat& X_)
 
 	assert(x_.cols == X_.cols);
 	const size_t N = x_.cols;
-	Mat A = Mat::zeros(2 * N, 12, CV_64FC1);
+	//Mat A = Mat::zeros(2 * N, 12, CV_64FC1);
+
+	Mat A;// = Mat::zeros(0, 0, CV_64FC1);
+
 
 	// Itterate over correspondances to produce two rows of A
 	for (int j = 0; j < N; ++j) // Itterate across cols ->
@@ -120,8 +121,20 @@ Mat construct_A(const Mat& x_, const Mat& X_)
 		for (int i = 0; i < 4; ++i) // 4D-homo-world points
 			X_j.at<double>(0, i) = X_.at<double>(i, j); // Copy col-vector into row-vector
 
-		auto temp = construct(x_j, X_j);
+		if (j == 0)
+			A = construct(x_j, X_j);
+		else
+		{
+			auto temp = construct(x_j, X_j);
+			vconcat(A, temp, A);
+		}
 	}
+
+
+
+	cout << "A:\n" << A;
+	getchar();
+
 	return A;
 }
 //===================================================================
