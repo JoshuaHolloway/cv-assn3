@@ -131,10 +131,6 @@ Mat construct_A(const Mat& x_, const Mat& X_)
 	}
 
 
-
-	cout << "A:\n" << A;
-	getchar();
-
 	return A;
 }
 //===================================================================

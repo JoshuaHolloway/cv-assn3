@@ -1,4 +1,5 @@
 #include "header.h"
+#include "Matlab_Class.h"
 int main()
 {
 	/// Part 1:
@@ -25,6 +26,27 @@ int main()
 	
 	// Construct the matrix A corresponding to equation 7.2 (page 178 in H&Z)
 	auto A = construct_A(x_1_, X_1_);
+
+	// TODO - drop SVD on A
+	// [U, SIGMA, V] = svd(A);
+
+	Mat w, u, vt;
+	cv::SVD::compute(A, w, u, vt);
+	//cout << "Vt:\n" << vt;
+
+	Mat v = vt.t();
+	cout << "V:\n" << v;
+
+
+	// Link to MATLAB environment
+	matlabClass matlab;
+	//matlab.passImageIntoMatlab(v);
+	matlab.passImageIntoMatlab(A);
+
+	// Run MATLAB script that executes prototype
+	matlab.command("ass3");
+
+	// TODO - extract right-most column of V
 
 
 	auto img = imread("rubik_cube.jpg");
