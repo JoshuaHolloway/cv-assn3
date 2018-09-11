@@ -27,24 +27,34 @@ int main()
 	// Construct the matrix A corresponding to equation 7.2 (page 178 in H&Z)
 	auto A = construct_A(x_1_, X_1_);
 
-	cout << "A:\n" << A;
+	//cout << "A:\n" << A;
 
 
 
 	// TODO - drop SVD on A
 	// [U, SIGMA, V] = svd(A);
 
-	Mat w, u, vt;
-	cv::SVD::compute(A, w, u, vt);
+	Mat W, U, Vt;
+	cv::SVD::compute(A, W, U, Vt);
 	//cout << "Vt:\n" << vt;
 
-	Mat v = vt.t();
-	cout << "V:\n" << v;
+	Mat V = -Vt.t(); // SVD is only unique up to a sign
+	//cout << "V:\n" << V;
+
+	// Extract right most column of V
+	const size_t I = V.rows;
+	const size_t J = V.cols;
+	Mat v(I, 1, CV_64FC1); // Col-vector to store right most col of V
+	for (int i = 0; i < I; ++i)
+		v.at<double>(i, 0) = V.at<double>(i, J-1); // Itterate down right-most col of V
+
+	cout << "v:\n" << v;
+
 
 	// Link to MATLAB environment
 	matlabClass matlab;
-	//matlab.passImageIntoMatlab(v);
-	matlab.passImageIntoMatlab(A);
+	matlab.passImageIntoMatlab(v);
+	//matlab.passImageIntoMatlab(A);
 
 	// Run MATLAB script that executes prototype
 	matlab.command("ass3");
