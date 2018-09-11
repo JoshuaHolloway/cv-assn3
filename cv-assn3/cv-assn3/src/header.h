@@ -192,18 +192,15 @@ void P_to_KRt(const Mat& P)
 	cout << "\n\nP:\n" << P;
 	cout << "\n\nsubmat:\n" << M;
 
-	//Vec3d RQDecomp3x3(
-	//	InputArray src, 
-	//	OutputArray mtxR, 
-	//	OutputArray mtxQ, 
-	//	OutputArray Qx = noArray(), 
-	//	OutputArray Qy = noArray(), 
-	//	OutputArray Qz = noArray())
 	Mat R, Q;
 	RQDecomp3x3(M, R, Q);
 	cout << "\nR:\n" << R;
 	cout << "\n\nQ:\n" << Q;
 
+	//K = R/float(R[2,2])
+	auto K = R / R.at<double>(2, 2);
+
+	cout << "\n\n\nK:\n" << K;
 
 	getchar();
 }
