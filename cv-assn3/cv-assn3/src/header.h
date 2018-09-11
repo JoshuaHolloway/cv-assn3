@@ -1,6 +1,7 @@
 #pragma once
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include <iostream>
 #include <vector>
 #include <type_traits>
@@ -8,6 +9,7 @@
 using cv::Mat;
 using cv::Scalar;
 using cv::Point2f;
+using cv::circle;
 using cv::imread;
 using cv::imshow;
 using cv::waitKey;
@@ -139,3 +141,29 @@ Mat construct_A(const Mat& x_, const Mat& X_)
 	return A;
 }
 //===================================================================
+void draw_points(
+	Mat& img_c, 
+	vector<double> x_u, 
+	vector<double> x_v,
+	Scalar color = Scalar(255, 0, 0))
+{
+	// Place points in form to be drawn
+	Point2f point1(x_u[0], x_v[0]);
+	vector<Point2f> pts1({ point1 });
+	for (int j = 1; j < N; ++j)
+		pts1.push_back(Point2f(x_u[j], x_v[j]));
+
+	// Draw points on original image
+	int radius = 2;
+	//Scalar color(255, 0, 0);
+	vector<Scalar> colors{ Scalar(255, 0, 0), Scalar(0, 255, 0), Scalar(0, 0, 255), Scalar(255, 255, 0) };
+	int thickness;
+
+	// Look at mapping of 3-points for affine transformation
+	int i = 0;
+	for (auto itter : pts1)
+		circle(img_c, itter, radius, color, thickness = 4);
+		//cv::circle(img_c, itter, radius, colors[i++ % 3], thickness = 8);
+
+
+}

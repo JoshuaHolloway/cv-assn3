@@ -56,7 +56,6 @@ int main()
 	auto x_1_reproject = from_homo(x_1_reproject_);
 	cout << "x_1_reproject" << x_1_reproject;
 
-	
 	/// Compute re-projection error
 
 	// Get into form that matches notation from LM-implementation notes:
@@ -85,7 +84,7 @@ int main()
 		auto diff = d_jx - d_jy;
 		l2 += diff * diff;
 	}
-
+	
 	// Perform inner product with self
 	auto sum_sqaured_error = std::inner_product(d.begin(), d.end(), d.begin(), 0);
 	cout << "sum_sqaured_error = " << sum_sqaured_error << "\n";
@@ -93,27 +92,19 @@ int main()
 
 	// Look at image
 	auto img = imread("rubik_cube.jpg", CV_LOAD_IMAGE_GRAYSCALE);
-	Mat img_c1; 
-	cvtColor(img, img_c1, cv::COLOR_GRAY2BGR);
-
-	// Place points in form to be drawn
-	Point2f point1(x_u[0], x_v[0]);	vector<Point2f> pts1 ({ point1 });
-	for (int j = 1; j < N; ++j)
-		pts1.push_back(Point2f(x_u[j], x_v[j]));
-
-	// Draw points on original image
-	int radius = 2;
-	Scalar color(255, 0, 0);
-	vector<Scalar> colors{ Scalar(255, 0, 0), Scalar(0, 255, 0), Scalar(0, 0, 255), Scalar(255, 255, 0) };
-	int thickness;
+	Mat img_c; 
+	//Mat img_c2;
+	cvtColor(img, img_c, cv::COLOR_GRAY2BGR);
+	//cvtColor(img, img_c2, cv::COLOR_GRAY2BGR);
 	
-	// Look at mapping of 3-points for affine transformation
-	int i = 0;
-	for (auto itter : pts1)
-		cv::circle(img_c1, itter, radius, colors[i++ % 3], thickness = 8);
+	// Draw points on image
+	Scalar color;
+	draw_points(img_c, x_u,     x_v,     color = Scalar(255, 0,   255));
+	draw_points(img_c, x_u_hat, x_v_hat, color = Scalar(0,   2550, 0));
 
-	imshow("Original with 3-points", img_c1);
+	imshow("test", img_c);
 	waitKey(0);
+
 
 	/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	/// Protoyping stuff:
@@ -127,6 +118,5 @@ int main()
 	// Run MATLAB script that executes prototype
 	matlab.command("ass3");
 
-	
 	return 0;
 }
