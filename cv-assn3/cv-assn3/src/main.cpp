@@ -81,14 +81,14 @@ int main()
 		d.push_back(d_jx);
 		d.push_back(d_jy);
 
-		auto diff = d_jx - d_jy;
-		l2 += diff * diff;
+		l2 += d_jx * d_jx + d_jy * d_jy;
 	}
+	l2 = sqrt(l2) / static_cast<double>(N);
 	
 	// Perform inner product with self
-	auto sum_sqaured_error = std::inner_product(d.begin(), d.end(), d.begin(), 0);
-	cout << "sum_sqaured_error = " << sum_sqaured_error << "\n";
-	cout << "l2 error = " << l2 << "\n";
+	auto l2_v2 = sqrt(std::inner_product(d.begin(), d.end(), d.begin(), 0)) / static_cast<double>(N);
+	cout << "\nl2-norm with stl (something is wrong though) = " << l2_v2 << "\n";
+	cout << "l2 error manual (correct) = " << l2 << "\n";
 
 	// Look at image
 	auto img = imread("rubik_cube.jpg", CV_LOAD_IMAGE_GRAYSCALE);
@@ -102,13 +102,13 @@ int main()
 	draw_points(img_c, x_u,     x_v,     color = Scalar(255, 0,   255));
 	draw_points(img_c, x_u_hat, x_v_hat, color = Scalar(0,   2550, 0));
 
-	imshow("test", img_c);
-	waitKey(0);
+
 
 
 	/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	/// Protoyping stuff:
 	/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 
 	// Link to MATLAB environment
 	matlabClass matlab;
@@ -117,6 +117,9 @@ int main()
 
 	// Run MATLAB script that executes prototype
 	matlab.command("ass3");
+
+	imshow("test", img_c);
+	waitKey(0);
 
 	return 0;
 }

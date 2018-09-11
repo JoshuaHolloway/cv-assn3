@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <type_traits>
+#include <cmath>
 //===================================================================
 using cv::Mat;
 using cv::Scalar;
