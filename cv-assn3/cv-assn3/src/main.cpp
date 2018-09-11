@@ -27,6 +27,10 @@ int main()
 	// Construct the matrix A corresponding to equation 7.2 (page 178 in H&Z)
 	auto A = construct_A(x_1_, X_1_);
 
+	cout << "A:\n" << A;
+
+
+
 	// TODO - drop SVD on A
 	// [U, SIGMA, V] = svd(A);
 
@@ -36,7 +40,6 @@ int main()
 
 	Mat v = vt.t();
 	cout << "V:\n" << v;
-
 
 	// Link to MATLAB environment
 	matlabClass matlab;
