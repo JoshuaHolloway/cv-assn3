@@ -96,14 +96,10 @@ int main()
 	Mat img_c1; 
 	cvtColor(img, img_c1, cv::COLOR_GRAY2BGR);
 
-	// Place poitns in form to be drawn
-	const int x1 = 50, y1 = 50;   // (x1,y1) ----- (x2,y1)
-	const int x2 = 200, y2 = 200; //    |             |
-	const int delta = 50;         //    |             |
-                                // (x1,y2) ----- (x2,y2)
-	Point2f point1(x1, y1), point2(x2, y1);
-	Point2f point3(x1, y2), point4(x2, y2);	vector<Point2f> pts1({ point1, point2, point3 });
-
+	// Place points in form to be drawn
+	Point2f point1(x_u[0], x_v[0]);	vector<Point2f> pts1 ({ point1 });
+	for (int j = 1; j < N; ++j)
+		pts1.push_back(Point2f(x_u[j], x_v[j]));
 
 	// Draw points on original image
 	int radius = 2;
@@ -114,7 +110,7 @@ int main()
 	// Look at mapping of 3-points for affine transformation
 	int i = 0;
 	for (auto itter : pts1)
-		cv::circle(img_c1, itter, radius, colors[i++], thickness = 8);
+		cv::circle(img_c1, itter, radius, colors[i++ % 3], thickness = 8);
 
 	imshow("Original with 3-points", img_c1);
 	waitKey(0);
