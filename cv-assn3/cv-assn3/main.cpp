@@ -23,6 +23,35 @@ Mat copy_2_mat(const T(&arr)[dim1][dim2])
 	return mat;
 }
 //===================================================================
+Mat to_homo(const Mat& x)
+{
+	// Map a vector in non-homogeneous coordinates (dimension m)
+	//  to a vector in homogeneous coordinates     (dimension m+1)
+
+	Mat x_ = Mat::ones(x.rows + 1, x.cols, CV_64FC1);
+	for (int i = 0; i < x.rows; ++i)
+		for (int j = 0; j < x.cols; ++j)
+			x_.at<double>(i, j);
+
+	return x_;
+}
+//===================================================================
+Mat from_homo(const Mat& x_) // NEED TO TEST THAT THIS WORKS AS EXPECTED!!!!!!!!!!!!!!!!!!
+{
+	// Map a vector in homogeneous coordinates     (dimension m+1)
+	//  to a vector in non-homogeneous coordinates (dimension m)
+
+	const size_t rows = x_.rows;
+	const size_t cols = x_.cols;
+
+	Mat x = Mat::ones(rows - 1, cols, CV_64FC1);
+	for (int i = 0; i < rows - 1; ++i)
+		for (int j = 0; j < cols; ++j)
+			x.at<double>(i, j) = x_.at<double>(i, j) / x_.at<double>(rows, j);
+
+	return x;
+}
+//===================================================================
 int main()
 {
 	/// Part 1:
@@ -44,6 +73,9 @@ int main()
 	
 	auto x_1 = copy_2_mat(pts_2d);
 	auto X_1 = copy_2_mat(pts_3d);
+
+	auto x_1_ = to_homo(x_1);
+	auto X_1_ = to_homo(X_1);
 	
 	auto img = imread("rubik_cube.jpg");
 	imshow("test", img);
