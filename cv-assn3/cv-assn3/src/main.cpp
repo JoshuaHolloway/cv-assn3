@@ -105,7 +105,16 @@ int main()
 	/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	/// Decompose the projection matrix into P = K * [R t]
 	/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	P_to_KRt(P);
+	Proj_struct proj;
+	proj.P = P;
+	proj.P_to_KRt();
+
+	cout << "\n in main function \n\n\n";
+	cout << "\n\nK:\n" << proj.K;
+	cout << "\n\nR:\n" << proj.R;
+	cout << "\n\nt:\n" << proj.t;
+
+
 
 
 

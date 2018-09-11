@@ -170,71 +170,80 @@ void draw_points(
 
 }
 //===================================================================
-void P_to_KRt(const Mat& P)
+struct Proj_struct
 {
-	//	This function computes the decomposition of the projection matrix into intrinsic parameters, K, and extrinsic parameters Q(the rotation matrix) and t(the translation vector)
-	//
-	//  Usage:
-	//	K, Q, t = P_to_KRt(P)
-	//
-	//		Input :
-	//		P : 3x4 projection matrix
-	//
-	//		Outputs :
-	//  K: 3x3 camera intrinsics
-	//  Q : 3x3 rotation matrix(extrinsics)
-	//  t : 3x1 translation vector(extrinsics)
+	Mat P;
+	Mat K;
+	Mat R;
+	Mat t;
 
-	int x = 0, y = 0;
-	int delta = 3;
-	cv::Mat M = cv::Mat(P, cv::Rect(x, y, delta, delta));
-
-	cout << "\n\nP:\n" << P;
-	cout << "\n\nsubmat:\n" << M;
-
-	Mat R, Q;
-	RQDecomp3x3(M, R, Q);
-	cout << "\nR:\n" << R;
-	cout << "\n\nQ:\n" << Q;
-
-	//K = R/float(R[2,2])
-	Mat K = R / R.at<double>(2, 2);
-
-	cout << "\n\n\nK:\n" << K;
-
-	//if K[0, 0] < 0:
-	//  K[:, 0] = -1 * K[:, 0]
-	//	Q[0, :] = -1 * Q[0, :]
-	if (K.at<double>(0, 0) < 0)
+	void P_to_KRt()//const Mat& P)
 	{
-		for (int i = 0; i < K.rows; ++i) // Itterate down rows of one column
-			K.at<double>(i, 0) = -1 * K.at<double>(i, 0);
+		//	This function computes the decomposition of the projection matrix into intrinsic parameters, K, and extrinsic parameters Q(the rotation matrix) and t(the translation vector)
+		//
+		//  Usage:
+		//	K, Q, t = P_to_KRt(P)
+		//
+		//		Input :
+		//		P : 3x4 projection matrix
+		//
+		//		Outputs :
+		//  K: 3x3 camera intrinsics
+		//  Q : 3x3 rotation matrix(extrinsics)
+		//  t : 3x1 translation vector(extrinsics)
 
-		for (int i = 0; i < Q.rows; ++i) // Itterate down rows of one column
-			Q.at<double>(i, 0) = -1 * Q.at<double>(i, 0);
+		int x = 0, y = 0;
+		int delta = 3;
+		cv::Mat M = cv::Mat(P, cv::Rect(x, y, delta, delta));
+
+		Mat Q;
+		RQDecomp3x3(M, R, Q);
+
+		//K = R/float(R[2,2])
+		K = R / R.at<double>(2, 2);
+
+		//if K[0, 0] < 0:
+		//  K[:, 0] = -1 * K[:, 0]
+		//	Q[0, :] = -1 * Q[0, :]
+		if (K.at<double>(0, 0) < 0)
+		{
+			for (int i = 0; i < K.rows; ++i) // Itterate down rows of one column
+				K.at<double>(i, 0) = -1 * K.at<double>(i, 0);
+
+			for (int i = 0; i < Q.rows; ++i) // Itterate down rows of one column
+				Q.at<double>(i, 0) = -1 * Q.at<double>(i, 0);
+		}
+
+		//if K[1, 1] < 0:
+		//	K[:, 1] = -1 * K[:, 1]
+		//	Q[1, :] = -1 * Q[1, :]
+		if (K.at<double>(1, 1) < 0)
+		{
+			for (int i = 0; i < K.rows; ++i) // Itterate down rows of one column
+				K.at<double>(i, 1) = -1 * K.at<double>(i, 1);
+
+			for (int i = 0; i < Q.rows; ++i) // Itterate down rows of one column
+				Q.at<double>(i, 1) = -1 * Q.at<double>(i, 1);
+		}
+
+		//if det(Q) < 0:
+		//	print 'Warning: Determinant of the supposed rotation matrix is -1'
+		if (determinant(Q) < 0)
+			cout << "\nWarning: Determinant of the supposed rotation matrix is -1\n";;
+
+		// P_3_3 = np.dot(K, Q)
+		Mat P_3_3 = K * Q;
+
+		// P_proper_scale = (P_3_3[0,0]*P)/float(P[0,0])
+		Mat P_proper_scale = (P_3_3.at<double>(0, 0) * P) / float(P.at<double>(0, 0));
+
+		//t = np.dot(inv(K), P_proper_scale[:, 3])
+		Mat inv_K = K.inv();
+		Mat P_proper_scale_slice(3, 1, CV_64FC1);
+		for (int i = 0; i < P_proper_scale.rows; ++i)
+			P_proper_scale_slice.at<double>(i, 0) = P_proper_scale.at<double>(i, 3); // Grab the third col 
+
+		t = inv_K * P_proper_scale_slice;
 	}
-
-	//if K[1, 1] < 0:
-	//	K[:, 1] = -1 * K[:, 1]
-	//	Q[1, :] = -1 * Q[1, :]
-	if (K.at<double>(1, 1) < 0)
-	{
-		for (int i = 0; i < K.rows; ++i) // Itterate down rows of one column
-			K.at<double>(i, 1) = -1 * K.at<double>(i, 1);
-
-		for (int i = 0; i < Q.rows; ++i) // Itterate down rows of one column
-			Q.at<double>(i, 1) = -1 * Q.at<double>(i, 1);
-	}
-	
-	//if det(Q) < 0:
-	//	print 'Warning: Determinant of the supposed rotation matrix is -1'
-	if (determinant(Q) < 0)
-		cout << "\nWarning: Determinant of the supposed rotation matrix is -1\n";;
-
-	// P_3_3 = np.dot(K, Q)
-	auto P_3_3 = K * Q;
-	cout << "\n\nP_3_3 = " << P_3_3;
-
-	getchar();
-	getchar();
-}
+};
+//===================================================================
