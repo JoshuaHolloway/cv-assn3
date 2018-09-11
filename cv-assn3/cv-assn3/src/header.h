@@ -198,10 +198,43 @@ void P_to_KRt(const Mat& P)
 	cout << "\n\nQ:\n" << Q;
 
 	//K = R/float(R[2,2])
-	auto K = R / R.at<double>(2, 2);
+	Mat K = R / R.at<double>(2, 2);
 
 	cout << "\n\n\nK:\n" << K;
 
+	//if K[0, 0] < 0:
+	//  K[:, 0] = -1 * K[:, 0]
+	//	Q[0, :] = -1 * Q[0, :]
+	if (K.at<double>(0, 0) < 0)
+	{
+		for (int i = 0; i < K.rows; ++i) // Itterate down rows of one column
+			K.at<double>(i, 0) = -1 * K.at<double>(i, 0);
+
+		for (int i = 0; i < Q.rows; ++i) // Itterate down rows of one column
+			Q.at<double>(i, 0) = -1 * Q.at<double>(i, 0);
+	}
+
+	//if K[1, 1] < 0:
+	//	K[:, 1] = -1 * K[:, 1]
+	//	Q[1, :] = -1 * Q[1, :]
+	if (K.at<double>(1, 1) < 0)
+	{
+		for (int i = 0; i < K.rows; ++i) // Itterate down rows of one column
+			K.at<double>(i, 1) = -1 * K.at<double>(i, 1);
+
+		for (int i = 0; i < Q.rows; ++i) // Itterate down rows of one column
+			Q.at<double>(i, 1) = -1 * Q.at<double>(i, 1);
+	}
+	
+	//if det(Q) < 0:
+	//	print 'Warning: Determinant of the supposed rotation matrix is -1'
+	if (determinant(Q) < 0)
+		cout << "\nWarning: Determinant of the supposed rotation matrix is -1\n";;
+
+	// P_3_3 = np.dot(K, Q)
+	auto P_3_3 = K * Q;
+	cout << "\n\nP_3_3 = " << P_3_3;
+
+	getchar();
 	getchar();
 }
-
