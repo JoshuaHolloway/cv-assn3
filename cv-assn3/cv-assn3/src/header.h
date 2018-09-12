@@ -177,6 +177,13 @@ struct Proj_struct
 	Mat R;
 	Mat t;
 
+	Proj_struct(Mat mat)
+	{
+		P = mat;
+		P_to_KRt();
+	}
+
+
 	void P_to_KRt()//const Mat& P)
 	{
 		//	This function computes the decomposition of the projection matrix into intrinsic parameters, K, and extrinsic parameters Q(the rotation matrix) and t(the translation vector)
@@ -247,3 +254,33 @@ struct Proj_struct
 	}
 };
 //===================================================================
+Mat calibrate(const Mat& x_, const Mat& X_)
+{
+	// Function computes the Projection matrix P from a set (>= 6)
+	// 3D<->2D point correspondences
+
+	// Construct the matrix A corresponding to equation 7.2 (page 178 in H&Z)
+	auto A = construct_A(x_, X_);
+
+	// Drop an SVD on A
+	Mat W, U, Vt;
+	cv::SVD::compute(A, W, U, Vt);
+
+	// Modify SVD
+	Mat V = -Vt.t(); // SVD in OpenCV is different than MATLAB and Numpy
+
+  // Extract right most column of V
+	const size_t I = V.rows;
+	const size_t J = V.cols;
+	Mat v(I, 1, CV_64FC1); // Col-vector to store right most col of V
+	for (int i = 0; i < I; ++i)
+		v.at<double>(i, 0) = V.at<double>(i, J - 1); // Itterate down right-most col of V
+
+  // Re-shape into 3x4 camera-projection matrix
+	int cn = 0;
+	int rows = 3;
+	Mat P = v.reshape(cn, rows);
+	//cout << "P:\n" << P;
+
+	return P;
+}
