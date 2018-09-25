@@ -269,14 +269,14 @@ Mat calibrate(const Mat& x_, const Mat& X_)
 	// Modify SVD
 	Mat V = -Vt.t(); // SVD in OpenCV is different than MATLAB and Numpy
 
-									 // Extract right most column of V
+	// Extract right most column of V
 	const size_t I = V.rows;
 	const size_t J = V.cols;
 	Mat v(I, 1, CV_64FC1); // Col-vector to store right most col of V
 	for (int i = 0; i < I; ++i)
 		v.at<double>(i, 0) = V.at<double>(i, J - 1); // Itterate down right-most col of V
 
-																								 // Re-shape into 3x4 camera-projection matrix
+  // Re-shape into 3x4 camera-projection matrix
 	int cn = 0;
 	int rows = 3;
 	Mat P = v.reshape(cn, rows);
@@ -328,15 +328,27 @@ Mat est_homog(const Mat& X, const Mat& x)
 	// Modify SVD
 	Mat V = Vt.t(); // SVD in OpenCV is different than MATLAB and Numpy
 
+	// Extract right most column of V
+	const size_t I = V.rows;
+	const size_t J = V.cols;
+	Mat v(I, 1, CV_64FC1); // Col-vector to store right most col of V
+	for (int i = 0; i < I; ++i)
+		v.at<double>(i, 0) = V.at<double>(i, J - 1); // Itterate down right-most col of V
+
+	// Re-shape into 3x3 homography matrix
+	int cn = 0;
+	int rows = 3;
+	Mat H = v.reshape(cn, rows);
+	cout << "H:\n" << H;
+
 	matlab.command("cd C:/Dropbox/fall2018_cv/ass4/cv-ass4-3/cv-ass4-matlab");
 	matlab.command("[ H, A, U, S, V ] = est_homography([488,124; 523,26; 266,254; 711,322], [908,124; 946,29; 880,255; 1116,327])");
 	matlab.passImageIntoMatlab(A, "A_cpp");
 	matlab.passImageIntoMatlab(U, "U_cpp");
 	matlab.passImageIntoMatlab(Sigma, "S_cpp");
 	matlab.passImageIntoMatlab(V, "V_cpp");
+	matlab.passImageIntoMatlab(H, "H_cpp");
 
 
-
-	Mat H;
 	return H;
 }
