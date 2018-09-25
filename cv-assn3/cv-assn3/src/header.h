@@ -7,6 +7,7 @@
 #include <vector>
 #include <type_traits>
 #include <cmath>
+#include "Matlab_Class.h"
 //===================================================================
 using cv::Mat;
 using cv::Scalar;
@@ -54,7 +55,7 @@ Mat from_homo(const Mat& x_) // NEED TO TEST THAT THIS WORKS AS EXPECTED!!!!!!!!
 	Mat x = Mat::ones(rows - 1, cols, CV_64FC1);
 	for (int i = 0; i < rows - 1; ++i)
 		for (int j = 0; j < cols; ++j)
-			x.at<double>(i, j) = x_.at<double>(i, j) / x_.at<double>(rows-1, j);
+			x.at<double>(i, j) = x_.at<double>(i, j) / x_.at<double>(rows - 1, j);
 
 	return x;
 }
@@ -76,7 +77,7 @@ Mat construct(const Mat& x_j, const Mat& X_j)
 	// Construct row-1
 	Mat temp1 = Mat::zeros(1, 4, CV_64FC1);
 	Mat temp2 = -w * X_j;
-	Mat temp3 =  y * X_j;
+	Mat temp3 = y * X_j;
 
 	Mat row1;
 	hconcat(temp1, temp2, row1);
@@ -118,14 +119,14 @@ Mat construct_A(const Mat& x_, const Mat& X_)
 	Mat A;// = Mat::zeros(0, 0, CV_64FC1);
 
 
-	// Itterate over correspondances to produce two rows of A
+				// Itterate over correspondances to produce two rows of A
 	for (int j = 0; j < N; ++j) // Itterate across cols ->
 	{
 		// Copy over one col by itterating down rows of current col
 		Mat x_j(1, 3, CV_64FC1);
 		for (int i = 0; i < 3; ++i) // 3D-homo-camera plane points
 			x_j.at<double>(0, i) = x_.at<double>(i, j); // Copy col-vector into row-vector
-	
+
 		Mat X_j(1, 4, CV_64FC1); // Copy col-vector into row-vector
 		for (int i = 0; i < 4; ++i) // 4D-homo-world points
 			X_j.at<double>(0, i) = X_.at<double>(i, j); // Copy col-vector into row-vector
@@ -144,8 +145,8 @@ Mat construct_A(const Mat& x_, const Mat& X_)
 }
 //===================================================================
 void draw_points(
-	Mat& img_c, 
-	vector<double> x_u, 
+	Mat& img_c,
+	vector<double> x_u,
 	vector<double> x_v,
 	Scalar color = Scalar(255, 0, 0))
 {
@@ -165,7 +166,7 @@ void draw_points(
 	int i = 0;
 	for (auto itter : pts1)
 		circle(img_c, itter, radius, color, thickness = 4);
-		//cv::circle(img_c, itter, radius, colors[i++ % 3], thickness = 8);
+	//cv::circle(img_c, itter, radius, colors[i++ % 3], thickness = 8);
 
 
 }
@@ -182,7 +183,6 @@ struct Proj_struct
 		P = mat;
 		P_to_KRt();
 	}
-
 
 	void P_to_KRt()//const Mat& P)
 	{
@@ -269,18 +269,74 @@ Mat calibrate(const Mat& x_, const Mat& X_)
 	// Modify SVD
 	Mat V = -Vt.t(); // SVD in OpenCV is different than MATLAB and Numpy
 
-  // Extract right most column of V
+									 // Extract right most column of V
 	const size_t I = V.rows;
 	const size_t J = V.cols;
 	Mat v(I, 1, CV_64FC1); // Col-vector to store right most col of V
 	for (int i = 0; i < I; ++i)
 		v.at<double>(i, 0) = V.at<double>(i, J - 1); // Itterate down right-most col of V
 
-  // Re-shape into 3x4 camera-projection matrix
+																								 // Re-shape into 3x4 camera-projection matrix
 	int cn = 0;
 	int rows = 3;
 	Mat P = v.reshape(cn, rows);
-	//cout << "P:\n" << P;
+	cout << "P:\n" << P;
 
 	return P;
+}
+//===================================================================
+Mat est_homog(const Mat& X, const Mat& x)
+{
+	// -X stores the feature coordinates for image-1
+	// -x stores the feature coordinates for image-2
+	// -Both are 2D-arrays stored like this:
+	//    [0][j] = x-coordinate of feature-j
+	//    [1][j] = y-coordinate of feature-j
+
+	auto X1 = X.at<double>(0, 0), Y1 = X.at<double>(1, 0);
+	auto X2 = X.at<double>(0, 1), Y2 = X.at<double>(1, 1);
+	auto X3 = X.at<double>(0, 2), Y3 = X.at<double>(1, 2);
+	auto X4 = X.at<double>(0, 3), Y4 = X.at<double>(1, 3);
+
+	auto x1 = x.at<double>(0, 0), y1 = x.at<double>(1, 0);
+	auto x2 = x.at<double>(0, 1), y2 = x.at<double>(1, 1);
+	auto x3 = x.at<double>(0, 2), y3 = x.at<double>(1, 2);
+	auto x4 = x.at<double>(0, 3), y4 = x.at<double>(1, 3);
+
+	Mat A(8, 9, CV_64FC1);
+	A.at<double>(0, 0) = -X1; A.at<double>(0, 1) = -Y1; A.at<double>(0, 2) = -1; A.at<double>(0, 3) = 0;   A.at<double>(0, 4) = 0;   A.at<double>(0, 5) = 0;  A.at<double>(0, 6) = X1 * x1; A.at<double>(0, 7) = Y1 * x1; A.at<double>(0, 8) = x1;
+	A.at<double>(1, 0) = 0;   A.at<double>(1, 1) = 0;   A.at<double>(1, 2) = 0;  A.at<double>(1, 3) = -X1; A.at<double>(1, 4) = -Y1; A.at<double>(1, 5) = -1; A.at<double>(1, 6) = X1 * y1; A.at<double>(1, 7) = Y1 * y1; A.at<double>(1, 8) = y1;
+
+	A.at<double>(2, 0) = -X2; A.at<double>(2, 1) = -Y2; A.at<double>(2, 2) = -1; A.at<double>(2, 3) = 0;   A.at<double>(2, 4) = 0;   A.at<double>(2, 5) = 0;  A.at<double>(2, 6) = X2 * x2; A.at<double>(2, 7) = Y2 * x2; A.at<double>(2, 8) = x2;
+	A.at<double>(3, 0) = 0;   A.at<double>(3, 1) = 0;   A.at<double>(3, 2) = 0;  A.at<double>(3, 3) = -X2; A.at<double>(3, 4) = -Y2; A.at<double>(3, 5) = -1; A.at<double>(3, 6) = X2 * y2; A.at<double>(3, 7) = Y2 * y2; A.at<double>(3, 8) = y2;
+
+	A.at<double>(4, 0) = -X3; A.at<double>(4, 1) = -Y3; A.at<double>(4, 2) = -1; A.at<double>(4, 3) = 0;   A.at<double>(4, 4) = 0;   A.at<double>(4, 5) = 0;  A.at<double>(4, 6) = X3 * x3; A.at<double>(4, 7) = Y3 * x3; A.at<double>(4, 8) = x3;
+	A.at<double>(5, 0) = 0;   A.at<double>(5, 1) = 0;   A.at<double>(5, 2) = 0;  A.at<double>(5, 3) = -X3; A.at<double>(5, 4) = -Y3; A.at<double>(5, 5) = -1; A.at<double>(5, 6) = X3 * y3; A.at<double>(5, 7) = Y3 * y3; A.at<double>(5, 8) = y3;
+
+	A.at<double>(6, 0) = -X4; A.at<double>(6, 1) = -Y4; A.at<double>(6, 2) = -1; A.at<double>(6, 3) = 0;   A.at<double>(6, 4) = 0;   A.at<double>(6, 5) = 0;  A.at<double>(6, 6) = X4 * x4; A.at<double>(6, 7) = Y4 * x4; A.at<double>(6, 8) = x4;
+	A.at<double>(7, 0) = 0;   A.at<double>(7, 1) = 0;   A.at<double>(7, 2) = 0;  A.at<double>(7, 3) = -X4; A.at<double>(7, 4) = -Y4; A.at<double>(7, 5) = -1; A.at<double>(7, 6) = X4 * y4; A.at<double>(7, 7) = Y4 * y4; A.at<double>(7, 8) = y4;
+
+	// Drop an SVD on A
+	Mat Sigma, U, Vt;
+	int flag = 4; // Full
+	cv::SVD::compute(A, Sigma, U, Vt, flag=4);
+
+	matlabClass matlab;
+	
+	matlab.passImageIntoMatlab(Vt, "Vt_cpp");
+
+	// Modify SVD
+	Mat V = Vt.t(); // SVD in OpenCV is different than MATLAB and Numpy
+
+	matlab.command("cd C:/Dropbox/fall2018_cv/ass4/cv-ass4-3/cv-ass4-matlab");
+	matlab.command("[ H, A, U, S, V ] = est_homography([488,124; 523,26; 266,254; 711,322], [908,124; 946,29; 880,255; 1116,327])");
+	matlab.passImageIntoMatlab(A, "A_cpp");
+	matlab.passImageIntoMatlab(U, "U_cpp");
+	matlab.passImageIntoMatlab(Sigma, "S_cpp");
+	matlab.passImageIntoMatlab(V, "V_cpp");
+
+
+
+	Mat H;
+	return H;
 }

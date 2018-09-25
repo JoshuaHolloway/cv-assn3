@@ -93,7 +93,7 @@ public:
 	}
 
 	// 2D cv::Mat passed from C++ into MATLAB
-	void passImageIntoMatlab(const cv::Mat& img)
+	void passImageIntoMatlab(const cv::Mat& img, string name)
 	{
 		// Convert the Mat object into a double array
 		//double* linImgArrDouble = (double*)malloc(sizeof(double) * img.rows * img.cols);
@@ -106,8 +106,7 @@ public:
 
 		/// C++ -> MATLAB
 		// Put variable into MATLAB workstpace
-		engPutVariable(ep, "img_from_OpenCV", mx_Arr);
-		engEvalString(ep, "figure, imshow(img_from_OpenCV, [],'Border','tight');");
+		engPutVariable(ep, name.c_str(), mx_Arr);
 		delete[] linImgArrDouble;
 	}
 
@@ -176,7 +175,7 @@ public:
 
 		cppValDblPtr = transposeLin(cppValDblPtr, (int)cols, (int)rows);
 
-		
+
 		//std::cout << "Vector passed from MATLAB into C++:\n";
 		//for (int i = 0; i != (int)rows; ++i)
 		//{
